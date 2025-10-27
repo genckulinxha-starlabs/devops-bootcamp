@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "name": "docker_ami",
+      "builder_type": "amazon-ebs",
+      "build_time": 1761559260,
+      "files": null,
+      "artifact_id": "eu-north-1:ami-08ef36b7a39c69ac8",
+      "packer_run_uuid": "3a212736-f2b2-e49f-4ed6-611a2200928e",
+      "custom_data": null
+    }
+  ],
+  "last_run_uuid": "3a212736-f2b2-e49f-4ed6-611a2200928e"
+}
