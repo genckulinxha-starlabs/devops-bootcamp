@@ -1,12 +1,17 @@
-name: Configure AWS Credentials
+name: Terraform Plan
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
-  env:
-   working-directory: ../terraform
+
+env:
+  working-directory: ../terraform
+  permissions:
+  id-token: write
+  contents: read
+
 jobs:
   configure-aws-credentials:
     runs-on: ubuntu-latest
@@ -24,26 +29,24 @@ jobs:
       - name: Verify AWS Credentials
         run: aws sts get-caller-identity
 
-        #TODO: Install Terraform, Initialize and validate configuration, Terraform plan, Terraform apply.
+      
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.9.5 
-
+          terraform_version: 1.5.6
       
       - name: Terraform Init
-        run: terraform 
-
+        run: |
+          cd ../terraform # Navigate to the terraform directory
+          terraform init
       
-      - name: Terraform Validate
-        run: terraform 
-
+      - name: Terraform Validate  
+        run: |
+          cd ../terraform # Navigate to the terraform directory
+          terraform validate
       
       - name: Terraform Plan
-        run: terraform 
-
-      
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'  
-        run: terraform 
+        run: |
+          cd ../terraform # Navigate to the terraform directory
+          terraform plan
