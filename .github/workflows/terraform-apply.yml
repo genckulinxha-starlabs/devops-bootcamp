@@ -3,7 +3,7 @@ name: Configure AWS Credentials
 on:
   push:
     branches:
-      - main
+      - dev4-terraform-core
 
 env:
   working-directory: ../terraform
