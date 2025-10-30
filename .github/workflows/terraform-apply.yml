@@ -7,6 +7,7 @@ on:
 
 env:
   working-directory: ../terraform
+ 
 jobs:
   configure-aws-credentials:
     runs-on: ubuntu-latest
@@ -33,17 +34,17 @@ jobs:
 
       
       - name: Terraform Init
-        working-directory: terraform
+        working-directory: infrastructure/terraform
         run: terraform init
 
       
       - name: Terraform Validate
-        working-directory: terraform
+        working-directory: infrastructure/terraform
         run: terraform validate
 
       
       - name: Terraform Plan
-        working-directory: terraform
+        working-directory: infrastructure/terraform
         run: terraform plan
 
       
