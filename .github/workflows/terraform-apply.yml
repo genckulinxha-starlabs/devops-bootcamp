@@ -33,17 +33,17 @@ jobs:
 
       
       - name: Terraform Init
-        working-directory: ../terraform
+        working-directory: terraform
         run: terraform init
 
       
       - name: Terraform Validate
-        working-directory: ../terraform
+        working-directory: terraform
         run: terraform validate
 
       
       - name: Terraform Plan
-        working-directory: ../terraform
+        working-directory: terraform
         run: terraform plan
 
       
