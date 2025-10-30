@@ -3,6 +3,7 @@ resource "aws_security_group" "allow_access" {
     name        = "allow_access_sg"
     description = "Security group to allow SSH, HTTP, and monitoring access"
     #vpc_id = var.vpc_id
+    count = var.create_security_group ? 1 : 0   # Create only if specified
 
   ingress {
     description = "Allow SSH"
@@ -37,4 +38,13 @@ resource "aws_security_group" "allow_access" {
   }
 
   tags = var.tags
+}
+
+# Data source for existing SG
+data "aws_security_group" "existing_sg" {
+  count = var.create_security_group ? 0 : 1
+  filter {
+    name   = "group-name"
+    values = ["allow_access_sg"]
+  }
 }

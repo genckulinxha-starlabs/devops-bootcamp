@@ -1,11 +1,11 @@
 variable "aws_region" {
   type        = string
-  default     = "eu-north-1"
+  default     = "eu-central-1"
   description = "AWS region"
 
   validation {
-    condition     = contains(["eu-north-1", "us-east-1"], var.aws_region)
-    error_message = "Region must be eu-north-1 or us-east-1."
+    condition     = contains(["eu-central-1", "us-east-1"], var.aws_region)
+    error_message = "Region must be eu-central-1 or us-east-1."
   }
 }
 /*
@@ -21,13 +21,14 @@ variable "ami_id" {
   type        = string
   description = "Packer-built Docker-ready AMI ID"
 }
-*/
+
 
 variable "current_user" {
   type        = string
-  description = "Current user running terraform"
+  description = "(Optional) Current user running terraform. Kept for backwards compatibility."
+  default     = ""
 }
-
+*/
 variable "instance_type" {
   type        = string
   default     = "t2.micro"
@@ -50,10 +51,42 @@ variable "instance_type" {
   } */
 }
 #IFRA-2
-variable "ssh_public_key" {
-  type        = string
-  description = "SSH public key content (e.g., from ~/.ssh/id_rsa.pub)"
+variable "ssh_public_keys" {
+  type = map(string)
+  description = "Mapping of username => path to SSH public key file on the machine running terraform. Example: { shefqet = \"C:/Users/shefqet/.ssh/id_rsa.pub\" }"
+  default = {}
 }
+
+variable "key_name_prefix" {
+  type        = string
+  description = "Prefix used when creating AWS key pair names. Final key name will be <prefix>-<username>"
+  default     = "team7"
+}
+/*
+variable "private_key_path" {
+  type        = string
+  description = "(Optional) Path to the private key file to use for remote-exec connection (only used by provisioners). Leave empty to skip."
+  default     = ""
+}
+
+variable "provisioner_retries" {
+  type        = number
+  description = "Number of times to retry provisioner connection"
+  default     = 3
+}
+
+variable "provisioner_retry_interval" {
+  type        = string
+  description = "Interval between provisioner retries (e.g., 10s, 30s)"
+  default     = "10s"
+}
+
+variable "provisioner_timeout" {
+  type        = string
+  description = "Timeout for provisioner SSH connection (e.g., 4m)"
+  default     = "4m"
+}
+*/
 /*
 variable "key_name" {
   type        = string
@@ -72,19 +105,30 @@ variable "subnet_cidr" {
   default = "10.0.1.0/24"
 }
 */
-# variables.tf
-variable "dynamodb_table_name" {
-  type    = string
-  default = "state_lock_table"
+
+variable "private_key_path" {
+  type        = string
+  description = "Path to the private key file for remote-exec provisioner (e.g., '~/.ssh/id_rsa'). Leave empty to skip."
+  default     = "~/.ssh/id_rsa"
 }
 
+# variables.tf
+#variable "dynamodb_table_name" {
+#  type    = string
+#  default = "state_lock_table"
+#}
 
+variable "create_security_group" {
+  description = "Create new SG (true) or use existing (false)"
+  type        = bool
+  default     = true
+}
 
 variable "tags" {
   type = map(string)
   default = {
-    Name        = "dev4-infra"
-    Owner       = "Shefqet"
+    Name        = "dev-infra"
+    Owner       = "dev7-team"
     Environment = "dev"
   }
   description = "Tags to apply to AWS resources"

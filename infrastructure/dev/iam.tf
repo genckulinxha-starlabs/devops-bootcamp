@@ -28,7 +28,7 @@ resource "aws_iam_policy" "s3_access_policy" {
       {
         Action   = ["s3:GetObject", "s3:PutObject", "s3:ListBucket"]
         Effect   = "Allow"
-        Resource = ["arn:aws:s3:::${aws_s3_bucket.bucket.bucket}/*", "arn:aws:s3:::${aws_s3_bucket.bucket.bucket}"]
+        Resource = "*"
       }
     ]
   })
@@ -46,3 +46,15 @@ resource "aws_iam_role_policy_attachment" "role_policy_attachment" {
   role = aws_iam_role.ec2_role.name # Attach to the IAM role created above
   policy_arn = aws_iam_policy.s3_access_policy.arn   # Attach the S3 access policy
 }   
+
+# Attach Amazon SSM Managed Instance Core policy so EC2 can register with SSM
+## AmazonSSMManagedInstanceCore is attached via managed_policy_arns on the role
+resource "aws_iam_role_policy_attachment" "ec2_ssm_managed" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_ecr_readonly" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}

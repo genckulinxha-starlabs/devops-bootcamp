@@ -1,9 +1,14 @@
+/*
 resource "aws_instance" "ec2_instance" {
   ami           = local.ami_id           # Use the ami_id defined in terraform.tfvars
   instance_type = var.instance_type
   #subnet_id     = aws_subnet.public_subnet.id  
-  vpc_security_group_ids = [aws_security_group.allow_access.id]
-  key_name      = local.key_name         # Use the key_name defined in terraform.tfvars
+  #vpc_security_group_ids = [aws_security_group.allow_access.id]
+  vpc_security_group_ids = [local.sg_id]  # ← CORRECTED LINE
+  key_name = try(
+    aws_key_pair.user_keys[var.current_user].key_name,
+    length(keys(aws_key_pair.user_keys)) == 1 ? values(aws_key_pair.user_keys)[0].key_name : null
+  )
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name # Use the instance profile defined in iam.tf
 
 
@@ -22,6 +27,26 @@ resource "aws_instance" "ec2_instance" {
 
   tags = var.tags
 }
+*/
+# dev/ec2.tf
+resource "aws_instance" "ec2_instance" {
+  ami           = local.ami_id
+  instance_type = var.instance_type
+
+  # Use the smart SG (create or reuse)
+  vpc_security_group_ids = [local.sg_id]
+
+  # Pick ONE key for AWS console (any team member)
+  key_name = values(aws_key_pair.user_keys)[0].key_name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+
+  # ADD ALL TEAM SSH KEYS + START DOCKER
+  user_data = templatefile("${path.module}/add_team_keys.sh", {
+    team_keys = var.ssh_public_keys
+  })
+
+  tags = var.tags
+}
 
 # Allocate an Elastic IP
 resource "aws_eip" "elastic_ip" { 
@@ -35,6 +60,8 @@ resource "aws_eip_association" "eip_assoc" {
   allocation_id = aws_eip.elastic_ip.id
 }
 
+
+# Simple remote-exec 
 resource "null_resource" "after_eip_setup" {
   depends_on = [aws_eip_association.eip_assoc]
 
@@ -43,25 +70,21 @@ resource "null_resource" "after_eip_setup" {
     eip         = aws_eip.elastic_ip.public_ip
   }
 
- # INFRA-14: Optional remote-exec provisioner (runs after launch)
   provisioner "remote-exec" {
-    
     inline = [
       "echo '--- Provisioner started ---'",
       "sudo systemctl is-active docker || sudo systemctl start docker",
-      "echo 'Docker is running: $(sudo systemctl is-active docker)'",
-      "echo '--- Checking running containers ---'",
+      "echo 'Docker status: $$(sudo systemctl is-active docker)'",
       "sudo docker ps -a || true",
       "echo '--- Provisioner finished ---'"
-
     ]
 
     connection {
       type        = "ssh"
       user        = "ec2-user"
-      private_key = file("~/.ssh/id_rsa")  # Path to private key
-      host        =aws_eip.elastic_ip.public_ip
-      timeout = "4m"
+      private_key = file("~/.ssh/id_rsa")  # Fixed standard path—team has this
+      host        = aws_eip.elastic_ip.public_ip
+      timeout     = "4m"
     }
   }
 }

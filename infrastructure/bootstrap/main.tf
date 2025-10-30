@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.18.0"
+      version = "= 6.18.0"
     }
   }
 
@@ -10,18 +10,28 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-north-1"
+  region = "eu-central-1"
+}
+
+# Static names (no random suffix)
+locals {
+  project     = "team7"
+  environment = "dev"
+  bucket_name = "team7-dev-tf-state"  # Static, unique name
+  table_name  = "team7-dev-tf-lock"   # Static, unique name
 }
 
 # S3 bucket for Terraform state
 resource "aws_s3_bucket" "tf_state" {
-  bucket = "shefqet-terraform-state-20251026"  # Static unique name (change if conflict)
-  force_destroy = true  # Allow bucket to be destroyed for testing purposes
+  bucket = local.bucket_name
+  force_destroy = true
 
   tags = {
-    Name    = "Terraform State Bucket"
-    Purpose = "Stores Terraform remote state"
-    Owner   = "Shefqet"
+    Name        = "Terraform State Bucket"
+    Purpose     = "Stores Terraform remote state"
+    Owner       = "team7"
+    Environment = local.environment
+    ManagedBy   = "Terraform"
   }
 }
 
@@ -57,7 +67,7 @@ resource "aws_s3_bucket_public_access_block" "public_block" {
 
 # DynamoDB table for state locking
 resource "aws_dynamodb_table" "tf_lock_table" {
-  name         = "shefqet-terraform-state-locks-20251026"  # Unique name
+  name         = local.table_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
