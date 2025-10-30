@@ -6,7 +6,7 @@ on:
       - dev4-terraform-core
 
 env:
-  working-directory: ../terraform
+  working-directory: infrastructure/terraform
  
 jobs:
   configure-aws-credentials:
