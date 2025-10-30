@@ -33,17 +33,19 @@ jobs:
 
       
       - name: Terraform Init
+        working-directory: terraform
         run: terraform 
 
       
       - name: Terraform Validate
+        working-directory: terraform
         run: terraform 
 
       
       - name: Terraform Plan
+        working-directory: terraform
         run: terraform 
 
       
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'  
-        run: terraform 
+  #    - name: Terraform Apply 
+     #    run: terraform apply -auto-approve 
